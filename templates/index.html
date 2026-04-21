@@ -1,11 +1,390 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Sous Chef</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #faf7f2;
+      --surface: #ffffff;
+      --accent: #c8622a;
+      --accent-dark: #a34f1e;
+      --text: #1c1a17;
+      --muted: #7a7570;
+      --border: #e8e2d9;
+      --used: #2e7d52;
+      --missed: #b85c2a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--text);
+      color: white;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.02em;
+    }
+
+    header .tagline {
+      font-size: 0.85rem;
+      color: #aaa;
+      font-weight: 300;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+
+    .search-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .search-card label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .search-card p.hint {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    textarea {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      resize: vertical;
+      min-height: 80px;
+      background: var(--bg);
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0 1.5rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      align-self: flex-start;
+      height: 44px;
+      white-space: nowrap;
+    }
+
+    .btn:hover { background: var(--accent-dark); }
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    .error-msg {
+      color: var(--missed);
+      font-size: 0.88rem;
+      margin-top: 0.75rem;
+      display: none;
+    }
+
+    /* Results */
+    #results-section { display: none; }
+
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .results-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+    }
+
+    .recipes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .recipe-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .recipe-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+
+    .recipe-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .recipe-card .card-body {
+      padding: 1rem;
+    }
+
+    .recipe-card h3 {
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 0.6rem;
+      line-height: 1.4;
+    }
+
+    .ingredient-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .tag {
+      font-size: 0.72rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .tag.used {
+      background: #e8f5ee;
+      color: var(--used);
+    }
+
+    .tag.missed {
+      background: #fdeee8;
+      color: var(--missed);
+    }
+
+    .recipe-meta {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .view-btn {
+      display: inline-block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      padding: 0.3rem 0.75rem;
+      transition: all 0.2s;
+    }
+
+    .view-btn:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    .no-results {
+      text-align: center;
+      color: var(--muted);
+      padding: 2rem;
+      font-size: 0.95rem;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      display: none;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 0.75rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
-  
+
+<header>
+  <div>
+    <h1>Smart Sous Chef</h1>
+  </div>
+</header>
+
+<div class="container">
+  <div class="search-card">
+    <label for="ingredients">Your Ingredients</label>
+    <p class="hint">Enter ingredients separated by commas — e.g. chicken, garlic, lemon, pasta</p>
+    <div class="input-row">
+      <textarea id="ingredients" placeholder="e.g. eggs, cheese, spinach, onion"></textarea>
+      <button class="btn" id="searchBtn" onclick="searchRecipes()">Find Recipes</button>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    Searching for recipes...
+  </div>
+
+  <div id="results-section">
+    <div class="results-header">
+      <h2 id="resultsTitle">Recipes Found</h2>
+      <button class="btn" onclick="resetSearch()">New Search</button>
+    </div>
+    <div class="recipes-grid" id="recipesGrid"></div>
+  </div>
+</div>
+
+<script>
+  async function searchRecipes() {
+    const input = document.getElementById('ingredients').value.trim();
+    const errorMsg = document.getElementById('errorMsg');
+    const loading = document.getElementById('loading');
+    const resultsSection = document.getElementById('results-section');
+    const btn = document.getElementById('searchBtn');
+
+    errorMsg.style.display = 'none';
+    resultsSection.style.display = 'none';
+
+    if (!input) {
+      errorMsg.textContent = 'Please enter at least one ingredient.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    loading.style.display = 'block';
+
+    try {
+      const response = await fetch('/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ingredients: input })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        errorMsg.textContent = data.error || 'Something went wrong.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      displayRecipes(data.recipes);
+
+    } catch (err) {
+      errorMsg.textContent = 'Network error. Please try again.';
+      errorMsg.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      loading.style.display = 'none';
+    }
+  }
+
+  function displayRecipes(recipes) {
+    const grid = document.getElementById('recipesGrid');
+    const section = document.getElementById('results-section');
+    const title = document.getElementById('resultsTitle');
+
+    grid.innerHTML = '';
+
+    if (!recipes || recipes.length === 0) {
+      grid.innerHTML = '<div class="no-results">No recipes found with those ingredients. Try adding more!</div>';
+      title.textContent = 'No Results';
+    } else {
+      title.textContent = `${recipes.length} Recipe${recipes.length > 1 ? 's' : ''} Found`;
+      recipes.forEach(r => {
+        grid.innerHTML += buildCard(r);
+      });
+    }
+
+    section.style.display = 'block';
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function buildCard(r) {
+    const usedTags = r.usedIngredients.map(i => `<span class="tag used">${i}</span>`).join('');
+    const missedTags = r.missedIngredients.map(i => `<span class="tag missed">${i}</span>`).join('');
+
+    return `
+      <div class="recipe-card">
+        <img src="${r.image}" alt="${r.title}" onerror="this.style.display='none'">
+        <div class="card-body">
+          <h3>${r.title}</h3>
+          <div class="ingredient-tags">${usedTags}${missedTags}</div>
+          <div class="recipe-meta">
+            ✅ ${r.usedIngredientCount} used &nbsp;·&nbsp; 🛒 ${r.missedIngredientCount} missing
+          </div>
+          <a class="view-btn" href="${r.link}" target="_blank">View Recipe →</a>
+        </div>
+      </div>
+    `;
+  }
+
+  function resetSearch() {
+    document.getElementById('ingredients').value = '';
+    document.getElementById('results-section').style.display = 'none';
+    document.getElementById('errorMsg').style.display = 'none';
+    document.getElementById('ingredients').focus();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Allow Enter key (Ctrl+Enter) to submit
+  document.getElementById('ingredients').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && e.ctrlKey) searchRecipes();
+  });
+</script>
+
 </body>
 </html>
