@@ -1,4 +1,3 @@
-
 def process_ingredients(entry_data):
 
     raw_list = entry_data.split(',')
