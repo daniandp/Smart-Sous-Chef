@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{{ recipe.title }} - Smart Sous Chef</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #faf7f2; --surface: #ffffff; --accent: #c8622a; --text: #1c1a17; --border: #e8e2d9; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding: 2rem; line-height: 1.6; }
+        .container { max-width: 800px; margin: 0 auto; background: var(--surface); padding: 2rem; border-radius: 12px; border: 1px solid var(--border); }
+        h1 { font-family: 'Playfair Display', serif; margin-bottom: 1rem; }
+        img { width: 100%; border-radius: 8px; margin-bottom: 1.5rem; }
+        .stats { display: flex; gap: 20px; margin-bottom: 2rem; font-weight: 500; color: var(--accent); }
+        .ing-list { margin-bottom: 2rem; padding-left: 1.2rem; }
+        .instructions { background: #fdfaf5; padding: 1.5rem; border-radius: 8px; }
+        .back-btn { display: inline-block; margin-bottom: 1.5rem; color: var(--accent); text-decoration: none; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">← Back to Search</a>
+        <h1>{{ recipe.title }}</h1>
+        <img src="{{ recipe.image }}" alt="{{ recipe.title }}">
+
+        <div class="stats">
+            <span>Ready in: {{ recipe.readyInMinutes }} mins</span>
+            <span>Servings: {{ recipe.servings }}</span>
+        </div>
+
+        <h3>Ingredients</h3>
+        <ul class="ing-list">
+            {% for ing in recipe.extendedIngredients %}
+                <li>{{ ing.original }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Instructions</h3>
+        <div class="instructions">
+            {{ recipe.instructions | safe }}
+        </div>
+    </div>
+</body>
+</html>

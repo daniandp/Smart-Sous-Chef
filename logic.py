@@ -1,29 +1,26 @@
-def process_ingredients(entry_data):
+def process_ingredients(raw_input):
+    """
+    Validates and cleans the raw ingredient input from the user.
+    Returns a tuple: (cleaned_ingredients_string, error_message)
+    """
+    if not raw_input or not raw_input.strip():
+        return None, 'Please enter at least one ingredient.'
 
-    raw_list = entry_data.split(',')
-    
-    clean_ingredients = []
-    
-    for item in raw_list:
+    # Split by comma, strip whitespace, remove empty entries
+    parts = [item.strip() for item in raw_input.split(',')]
+    ingredients = [item for item in parts if item]
 
-        stripped_item = item.strip()
-        
-        lowercase_item = stripped_item.lower()
+    if len(ingredients) == 0:
+        return None, 'No valid ingredients found. Please separate ingredients with commas.'
 
-        if lowercase_item != "":
-            clean_ingredients.append(lowercase_item)
-            
-    formatted_data = ",".join(clean_ingredients)
-    
-    return formatted_data
+    if len(ingredients) > 20:
+        return None, 'Too many ingredients. Please enter 20 or fewer.'
 
-def validate_api_response(response_json):
-   
-    if not response_json:
-        return False
+    # Remove any ingredients that are just numbers or special characters
+    cleaned = [i for i in ingredients if any(c.isalpha() for c in i)]
 
-    if 'status' in response_json:
-        if response_json['status'] == 'failure':
-            return False
+    if not cleaned:
+        return None, 'Please enter valid ingredient names.'
 
-    return True
+    # Spoonacular expects a comma-separated string
+    return ','.join(cleaned), None

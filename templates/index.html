@@ -258,6 +258,7 @@
 <header>
   <div>
     <h1>Smart Sous Chef</h1>
+    <div class="tagline">Tell us what you have — we'll tell you what to make</div>
   </div>
 </header>
 
@@ -267,7 +268,7 @@
     <p class="hint">Enter ingredients separated by commas — e.g. chicken, garlic, lemon, pasta</p>
     <div class="input-row">
       <textarea id="ingredients" placeholder="e.g. eggs, cheese, spinach, onion"></textarea>
-      <button class="btn" id="searchBtn" onclick="searchRecipes()">Find Recipes</button>
+      <button class="btn" id="searchBtn">Find Recipes</button>
     </div>
     <div class="error-msg" id="errorMsg"></div>
   </div>
@@ -280,7 +281,7 @@
   <div id="results-section">
     <div class="results-header">
       <h2 id="resultsTitle">Recipes Found</h2>
-      <button class="btn" onclick="resetSearch()">New Search</button>
+      <button class="btn" id="resetBtn">New Search</button>
     </div>
     <div class="recipes-grid" id="recipesGrid"></div>
   </div>
@@ -353,23 +354,24 @@
     section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  function buildCard(r) {
-    const usedTags = r.usedIngredients.map(i => `<span class="tag used">${i}</span>`).join('');
-    const missedTags = r.missedIngredients.map(i => `<span class="tag missed">${i}</span>`).join('');
+/* Find the buildCard function in your script and update the link as shown below */
 
-    return `
-      <div class="recipe-card">
-        <img src="${r.image}" alt="${r.title}" onerror="this.style.display='none'">
-        <div class="card-body">
-          <h3>${r.title}</h3>
-          <div class="ingredient-tags">${usedTags}${missedTags}</div>
-          <div class="recipe-meta">
-            ✅ ${r.usedIngredientCount} used &nbsp;·&nbsp; 🛒 ${r.missedIngredientCount} missing
+  function buildCard(r) {
+      const usedTags = r.usedIngredients.map(i => `<span class="tag used">${i}</span>`).join('');
+      const missedTags = r.missedIngredients.map(i => `<span class="tag missed">${i}</span>`).join('');
+
+      return `
+        <div class="recipe-card">
+          <img src="${r.image}" alt="${r.title}">
+          <div class="card-body">
+            <h3>${r.title}</h3>
+            <div class="ingredient-tags">${usedTags}${missedTags}</div>
+
+            <!-- ### NEW ###: Link now points to internal route instead of external link -->
+            <a class="view-btn" href="/recipe/${r.id}">View Recipe →</a>
           </div>
-          <a class="view-btn" href="${r.link}" target="_blank">View Recipe →</a>
         </div>
-      </div>
-    `;
+      `;
   }
 
   function resetSearch() {
@@ -380,6 +382,10 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // Event listeners
+  document.getElementById('searchBtn').addEventListener('click', searchRecipes);
+  document.getElementById('resetBtn').addEventListener('click', resetSearch);
+  
   // Allow Enter key (Ctrl+Enter) to submit
   document.getElementById('ingredients').addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && e.ctrlKey) searchRecipes();
